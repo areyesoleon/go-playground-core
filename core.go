@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -54,22 +53,4 @@ func Db(collection string) *mongo.Collection {
 		log.Fatal(err)
 	}
 	return client.Database("minim").Collection(collection)
-}
-
-//CRUD
-
-//Find ...
-func Find(collection string) ([]interface{}, error) {
-	res, err := Db(collection).Find(context.TODO(), bson.D{{}})
-	results := make([]interface{}, 0)
-	for res.Next(context.TODO()) {
-		var obj interface{}
-		err := res.Decode(&obj)
-		if err != nil {
-			log.Fatal(err)
-		}
-		results = append(results, &obj)
-	}
-	res.Close(context.TODO())
-	return results, err
 }
