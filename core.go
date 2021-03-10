@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"log"
+	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,6 +12,7 @@ import (
 )
 
 var singleTonMaster *MasterStruct
+var once sync.Once
 
 //MODEL
 
@@ -22,40 +24,41 @@ type Res struct {
 }
 
 // TimeData ...
-type timeData struct {
+type TimeData struct {
 	Create time.Time `json:"create"`
 	Update time.Time `json:"update"`
 }
 
 //User ...
 type User struct {
-	ID       primitive.ObjectID `bson:"_id, omitempty" json:"id,omitempty,unique"`
+	ID       primitive.ObjectID `bson:"_id, omitempty" json:"id,omitempty"`
 	Name     string             `json:"name"`
 	LastName string             `json:"lastName"`
 	Email    string             `json:"email"`
 	Password string             `json:"password"`
 	Admin    bool               `json:"admin"`
-	*timeData
 }
 
-type placeStore struct {
-	ID      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Address string             `json:"address"`
-	Coin    string             `json:"coin"`
+//Place ...
+type Place struct {
+	Name    string `json:"name"`
+	Address string `json:"address"`
+	Coin    string `json:"coin"`
 }
 
 //Shop ...
 type Shop struct {
-	*placeStore
-	*timeData
+	ID primitive.ObjectID `bson:"_id, omitempty" json:"id,omitempty"`
+	Place
+	TimeData
 }
 
 //Kiosk ...
 type Kiosk struct {
-	*placeStore
+	ID primitive.ObjectID `bson:"_id, omitempty" json:"id,omitempty"`
+	Place
 	IDshop primitive.ObjectID `json:"idShop"`
-	*timeData
+	TimeData
 }
 
 //MasterStruct ...
@@ -67,9 +70,10 @@ type MasterStruct struct {
 
 //SingleTonMaster ...
 func SingleTonMaster() *MasterStruct {
-	if singleTonMaster == nil {
+
+	once.Do(func() {
 		singleTonMaster = &MasterStruct{}
-	}
+	})
 
 	return singleTonMaster
 }
